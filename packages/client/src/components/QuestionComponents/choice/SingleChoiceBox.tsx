@@ -15,14 +15,12 @@ type PropsType = {
 
 const SingleChoiceBox: FC<PropsType> = ({ com_id, props }) => {
   const { title, options = [], value, isVertical } = props;
-
   return (
     <>
       <p>{title}</p>
       <ul className=" p-0 list-none ">
         {options.map((opt) => {
           const { value: val, text } = opt;
-
           // 判断竖向、横向
           let liClassName = '';
           if (isVertical) liClassName = ' mb-[10px]';
@@ -34,7 +32,7 @@ const SingleChoiceBox: FC<PropsType> = ({ com_id, props }) => {
                 <input
                   type="radio"
                   name={com_id}
-                  value={val}
+                  value={text}
                   defaultChecked={val === value}
                 />
                 {text}

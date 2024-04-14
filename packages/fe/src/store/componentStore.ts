@@ -21,6 +21,7 @@ interface State {
 }
 
 interface Action {
+  resetComponent: (stat: State) => void;
   setComponentList: (componentList: Array<Component>) => void;
   changeSelectedId: (id: string) => void;
   addComponentList: (newComponent: Component) => void;
@@ -41,6 +42,8 @@ export const useComponentStore = create<State & Action>()(
         selectedId: '',
         componentList: [],
         copiedComponent: null,
+        resetComponent: ({ selectedId, componentList, copiedComponent }) =>
+          set({ selectedId, componentList, copiedComponent }),
         setComponentList: (componentList) => set({ componentList }),
         changeSelectedId: (id) => set({ selectedId: id }),
         addComponentList: (newComponent) =>

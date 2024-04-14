@@ -28,12 +28,13 @@ export const usePageInfoStore = create<State & Action>()(
             state.title = title;
           });
         },
-        resetPageInfo: ({ title, desc, js, css }: State) => {
+        resetPageInfo: ({ title, desc, js, css, isPublished }: State) => {
           set({
             title,
             desc,
             js,
             css,
+            isPublished,
           });
         },
       })),

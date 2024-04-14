@@ -30,6 +30,7 @@ import {
   getComponentStatRequest,
   getQuestionStatListRequest,
 } from '../../../../request/stat';
+import { getQuestionRequest } from '../../../../request/question';
 
 const { Title } = Typography;
 
@@ -37,10 +38,63 @@ export const Route = createFileRoute('/question/$questionId/(Stat)/Stat')({
   component: Stat,
 });
 
+function useLoadQuestionData() {
+  const { questionId = '' } = useParams({
+    from: '/question/$questionId/Stat',
+  });
+
+  const { resetComponent } = useComponentStore();
+  const { resetPageInfo } = usePageInfoStore();
+
+  // ajax 加载
+  const { data, loading, error, run } = useRequest(
+    async (id: string) => {
+      if (!id) throw new Error('没有问卷 id');
+      const data = await getQuestionRequest(id);
+      return data;
+    },
+    {
+      manual: true,
+    }
+  );
+
+  // 根据获取的 data 设置 redux store
+  useEffect(() => {
+    if (!data) return;
+
+    const {
+      title = '',
+      desc = '',
+      js = '',
+      css = '',
+      isPublished = false,
+      componentList = [],
+    } = data;
+
+    // 获取默认的 selectedId
+    let selectedId = '';
+    if (componentList.length > 0) {
+      selectedId = componentList[0].fe_id; // 默认选中第一个组件
+    }
+
+    // 把 componentList 存储到 Redux store 中
+    resetComponent({ componentList, selectedId, copiedComponent: null });
+
+    // 把 pageInfo 存储到 redux store
+    resetPageInfo({ title, desc, js, css, isPublished });
+  }, [data]);
+
+  // 判断 id 变化，执行 ajax 加载问卷数据
+  useEffect(() => {
+    run(questionId);
+  }, [questionId]);
+
+  return { loading, error };
+}
+
 function Stat() {
   const navigate = useNavigate();
-  // const { loading } = useLoadQuestionData();
-  const loading = 0;
+  const { loading } = useLoadQuestionData();
   const { title, isPublished } = usePageInfoStore();
 
   // 状态提升 selectedId type

@@ -19,11 +19,20 @@ const MultipleChoiceBox: FC<PropsType> = ({ com_id, props }) => {
   const { title, isVertical, list = [] } = props;
 
   const [selectedValues, setSelectedValues] = useState<string[]>([]);
+  const [data, setData] = useState<string[]>([]);
+  
+  useEffect(() => {
+    const selected = selectedValues.map((selectedValue) => {
+      const a = list.find((i) => i.value === selectedValue);
+      return a?.text!;
+    });
+    setData(selected);
+  }, [selectedValues]);
 
   // 初始化时，判断默认选中
   useEffect(() => {
     list.forEach((item) => {
-      const { value, checked } = item;
+      const { value, checked, text } = item;
       if (checked) {
         setSelectedValues((selectedValues) => selectedValues.concat(value));
       }
@@ -47,8 +56,8 @@ const MultipleChoiceBox: FC<PropsType> = ({ com_id, props }) => {
     <>
       <p>{title}</p>
 
-      <input type="hidden" name={com_id} value={selectedValues.toString()} />
-
+      <input type="hidden" name={com_id} value={data.toString()} />
+      {selectedValues.toString()}
       <ul className=" p-0 list-none ">
         {list.map((item) => {
           const { value, text, checked } = item;
