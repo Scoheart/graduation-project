@@ -15,11 +15,16 @@ export class AnswerService {
     return this.answerRepository.save(createAnswerDto);
   }
 
-  findAll(questionId: number) {
-    return this.answerRepository.find({
-      where: {
-        questionId: +questionId,
-      },
-    });
+  async findAll(questionId: number, page: number, pageSize: number) {
+    return {
+      data: await this.answerRepository.find({
+        skip: (page - 1) * pageSize,
+        take: pageSize,
+        where: {
+          questionId: +questionId,
+        },
+      }),
+      total: await this.answerRepository.count(),
+    };
   }
 }

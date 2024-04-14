@@ -1,4 +1,5 @@
-import { FC, useEffect } from 'react';
+import { FC, useEffect, useMemo } from 'react';
+import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from 'recharts';
 import { nanoid } from 'nanoid';
 import {
   Typography,
@@ -11,6 +12,7 @@ import {
   Checkbox,
 } from 'antd';
 import { MinusCircleOutlined, PlusOutlined } from '@ant-design/icons';
+import { STAT_COLORS } from '../../../constants';
 const { Paragraph } = Typography;
 
 type OptionType = {
@@ -187,12 +189,54 @@ const PropComponent: FC<SingleChoiceBoxProps> = (
   );
 };
 
+// 统计组件的属性类型
+export type QuestionRadioStatPropsType = {
+  stat: Array<{ name: string; count: number }>;
+};
+
+function format(n: number) {
+  return (n * 100).toFixed(2);
+}
+
+const StatComponent: FC<QuestionRadioStatPropsType> = ({ stat = [] }) => {
+  // count 求和
+  const sum = useMemo(() => {
+    let s = 0;
+    stat.forEach((i) => (s += i.count));
+    return s;
+  }, [stat]);
+
+  return (
+    <div style={{ width: '300px', height: '400px' }}>
+      <ResponsiveContainer width="100%" height="100%">
+        <PieChart>
+          <Pie
+            dataKey="count"
+            data={stat}
+            cx="50%" // x 轴的偏移
+            cy="50%" // y 轴的偏移
+            outerRadius={50} // 饼图的直径
+            fill="#8884d8"
+            label={(i) => `${i.name}: ${format(i.count / sum)}%`}
+          >
+            {stat.map((i, index) => {
+              return <Cell key={index} fill={STAT_COLORS[index]} />;
+            })}
+          </Pie>
+          <Tooltip />
+        </PieChart>
+      </ResponsiveContainer>
+    </div>
+  );
+};
+
 export const SingleChoiceBoxConf = {
   title: '单选',
   type: 'singleChoiceBox',
   Component: SingleChoiceBox,
   PropComponent: PropComponent,
   defaultProps: defaultSingleChoiceBoxProps,
+  StatComponent: StatComponent,
 };
 
 export default SingleChoiceBox;

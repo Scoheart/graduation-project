@@ -18,7 +18,7 @@ import {
   Table,
   Pagination,
 } from 'antd';
-import QRCode from "qrcode.react"
+import QRCode from 'qrcode.react';
 import { useRequest, useTitle } from 'ahooks';
 import { usePageInfoStore } from '../../../../store/pageInfoStore';
 import { CopyOutlined, QrcodeOutlined, LeftOutlined } from '@ant-design/icons';
@@ -26,6 +26,10 @@ import { useComponentStore } from '../../../../store/componentStore';
 import { getComponentConfByType } from '../../../../components/QuestionComponents';
 import classNames from 'classnames';
 import { STAT_LIMIT } from '../../../../constants';
+import {
+  getComponentStatRequest,
+  getQuestionStatListRequest,
+} from '../../../../request/stat';
 
 const { Title } = Typography;
 
@@ -135,7 +139,6 @@ const StatHeader: FC = () => {
 
   // 使用 useMemo 1. 依赖项是否经常变化; 2. 缓存的元素是否创建成本较高
   const LinkAndQRCodeElem = useMemo(() => {
-
     // if (!isPublished) return null;
 
     // 拼接 url ，需要参考 C 端的规则
@@ -276,7 +279,11 @@ const PageStat: FC<PageStatPropsType> = (props: PageStatPropsType) => {
   const [list, setList] = useState([]);
   const { loading } = useRequest(
     async () => {
-      const res = await getQuestionStatListService(id, { page, pageSize });
+      const res = await getQuestionStatListRequest(questionId, {
+        page,
+        pageSize,
+      });
+      console.log(res);
       return res;
     },
     {
@@ -317,7 +324,7 @@ const PageStat: FC<PageStatPropsType> = (props: PageStatPropsType) => {
     };
   });
 
-  const dataSource = list.map((i: any) => ({ ...i, key: i._id }));
+  const dataSource = list.map((i: any) => ({ ...i, key: i.id }));
   const TableElem = (
     <>
       <Table
@@ -367,7 +374,7 @@ const ChartStat: FC<ChartStatPropsType> = (props: ChartStatPropsType) => {
   const [stat, setStat] = useState([]);
   const { run } = useRequest(
     async (questionId, componentId) =>
-      await getComponentStatService(questionId, componentId),
+      await getComponentStatRequest(questionId, componentId),
     {
       manual: true,
       onSuccess(res) {
@@ -385,7 +392,7 @@ const ChartStat: FC<ChartStatPropsType> = (props: ChartStatPropsType) => {
     if (!selectedComponentId) return <div>未选中组件</div>;
 
     const { StatComponent } =
-      getComponentConfByType(selectedComponentType) || {};
+      (getComponentConfByType(selectedComponentType) as any) || {};
     if (StatComponent == null) return <div>该组件无统计图表</div>;
 
     return <StatComponent stat={stat} />;

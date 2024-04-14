@@ -1,4 +1,4 @@
-import { Controller, Get, Param } from '@nestjs/common';
+import { Controller, Get, Param, Query } from '@nestjs/common';
 import { StatService } from './stat.service';
 import { CreateStatDto } from './dto/create-stat.dto';
 import { UpdateStatDto } from './dto/update-stat.dto';
@@ -12,17 +12,25 @@ export class StatController {
   ) {}
 
   @Get(':questionId')
-  async findOne(@Param('questionId') id: string) {
-    const data = await this.answerService.findAll(+id);
+  async findOne(
+    @Param('questionId') id: string,
+    @Query('page') page: number,
+    @Query('pageSize') pageSize: number,
+  ) {
+    const { data, total } = await this.answerService.findAll(
+      +id,
+      page,
+      pageSize,
+    );
     const statList = data.map((answer) => {
       const stat: {
-        questionId: number;
+        id: number;
         [index: string]: string | number;
       } = {
-        questionId: 0,
+        id: 0,
       };
-      const { questionId, answerList } = answer;
-      stat.questionId = questionId;
+      const { id, answerList } = answer;
+      stat.id = id;
 
       answerList.forEach((answer) => {
         stat[answer.componentId] = answer.value;
@@ -30,6 +38,19 @@ export class StatController {
 
       return stat;
     });
-    return statList;
+    return {
+      total: total,
+      list: statList,
+    };
+  }
+
+  @Get(':questionId/:componentId')
+  findAll(
+    @Param('questionId') id: string,
+    @Param('componentId') componentId: string,
+  ) {
+    return {
+      stat: [{ name: 'item1', count: 2 }],
+    };
   }
 }

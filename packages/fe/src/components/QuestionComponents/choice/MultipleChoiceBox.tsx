@@ -2,6 +2,15 @@ import { FC } from 'react';
 import { Typography, Space, Checkbox, Button, Form, Input } from 'antd';
 import { MinusCircleOutlined, PlusOutlined } from '@ant-design/icons';
 import { nanoid } from 'nanoid';
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+} from 'recharts';
 const { Paragraph } = Typography;
 
 type OptionType = {
@@ -162,12 +171,45 @@ const PropComponent: FC<MultipleChoiceBoxProps> = (
   );
 };
 
+// 统计组件的属性类型
+export type QuestionCheckboxStatPropsType = {
+  stat: Array<{ name: string; count: number }>;
+};
+
+const StatComponent: FC<QuestionCheckboxStatPropsType> = ({ stat }) => {
+  return (
+    <div style={{ width: '400px', height: '300px' }}>
+      <ResponsiveContainer width="100%" height="100%">
+        <BarChart
+          width={400}
+          height={300}
+          data={stat}
+          margin={{
+            top: 5,
+            right: 30,
+            left: 0,
+            bottom: 5,
+          }}
+        >
+          <CartesianGrid strokeDasharray="3 3" />
+          <XAxis dataKey="name" />
+          <YAxis />
+          <Tooltip />
+          {/* <Legend /> */}
+          <Bar dataKey="count" fill="#8884d8" />
+        </BarChart>
+      </ResponsiveContainer>
+    </div>
+  );
+};
+
 export const MultipleChoiceBoxConf = {
   title: '多选',
   type: 'multipleChoiceBox',
   Component: MultipleChoiceBox,
   PropComponent: PropComponent,
   defaultProps: defaultMultipleChoiceBoxProps,
+  StatComponent: StatComponent,
 };
 
 export default MultipleChoiceBox;

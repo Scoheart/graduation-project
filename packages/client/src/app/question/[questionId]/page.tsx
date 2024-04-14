@@ -77,10 +77,9 @@ export default async function question({
         <input type="hidden" name="questionId" value={id} />
 
         {ComponentListElem}
-
-        <div className=" !text-center m-4">
+        <div className="text-center m-4">
           {/* <input type="submit" value="提交"/> */}
-          <button type="submit">提交</button>
+          <button type="submit" className=' text-white bg-[#1677ff] border border-transparent rounded py-1 px-[15px]'>提交</button>
         </div>
       </form>
     </PageWrapper>
