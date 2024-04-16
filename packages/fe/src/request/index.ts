@@ -1,6 +1,7 @@
 import { message } from 'antd';
 import axios from 'axios';
 import { getToken } from '../utils';
+import { BASE_URL } from '../constants';
 
 export type ResType = {
   status: number;
@@ -11,7 +12,7 @@ export type ResDataType = {
   [key: string]: any;
 };
 const request = axios.create({
-  baseURL: 'http://192.168.10.3:8888',
+  baseURL: BASE_URL,
   // baseURL: 'http://localhost:8888',
 });
 

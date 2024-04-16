@@ -1,4 +1,6 @@
-const baseURL = 'http://192.168.10.3:8888';
+import { BASE_URL } from '@/constants';
+
+const baseURL = BASE_URL;
 
 export async function get(url: string) {
   const res = await fetch(`${baseURL}${url}`, {

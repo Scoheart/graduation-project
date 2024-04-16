@@ -25,7 +25,7 @@ import { CopyOutlined, QrcodeOutlined, LeftOutlined } from '@ant-design/icons';
 import { useComponentStore } from '../../../../store/componentStore';
 import { getComponentConfByType } from '../../../../components/QuestionComponents';
 import classNames from 'classnames';
-import { STAT_LIMIT } from '../../../../constants';
+import { CLINET_URL, STAT_LIMIT } from '../../../../constants';
 import {
   getComponentStatRequest,
   getQuestionStatListRequest,
@@ -196,7 +196,7 @@ const StatHeader: FC = () => {
     // if (!isPublished) return null;
 
     // 拼接 url ，需要参考 C 端的规则
-    const url = `http://192.168.10.3:3000/question/${questionId}`;
+    const url = `${CLINET_URL}${questionId}`;
 
     // 定义二维码组件
     const QRCodeElem = (

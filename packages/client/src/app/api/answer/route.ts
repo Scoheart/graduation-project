@@ -1,3 +1,4 @@
+import { CLINET_URL } from '@/constants';
 import { postAnswer } from '@/request/answer';
 import { NextResponse } from 'next/server';
 
@@ -7,7 +8,7 @@ export async function POST(request: Request) {
     NextResponse.json({ status: 400, msg: 'Method 错误' }, { status: 400 });
   }
   const answerInfo = genAnswerInfo(await request.formData());
-  const baseURL = 'http://192.168.10.3:3000';
+  const baseURL = CLINET_URL;
   const successUrl = new URL('/success', baseURL);
   const failUrl = new URL('/fail', baseURL);
 
