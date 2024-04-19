@@ -20,7 +20,7 @@ const MultipleChoiceBox: FC<PropsType> = ({ com_id, props }) => {
 
   const [selectedValues, setSelectedValues] = useState<string[]>([]);
   const [data, setData] = useState<string[]>([]);
-  
+
   useEffect(() => {
     const selected = selectedValues.map((selectedValue) => {
       const a = list.find((i) => i.value === selectedValue);
@@ -57,7 +57,6 @@ const MultipleChoiceBox: FC<PropsType> = ({ com_id, props }) => {
       <p>{title}</p>
 
       <input type="hidden" name={com_id} value={data.toString()} />
-      {selectedValues.toString()}
       <ul className=" p-0 list-none ">
         {list.map((item) => {
           const { value, text, checked } = item;
