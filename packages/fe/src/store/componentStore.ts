@@ -3,6 +3,7 @@ import { devtools, persist } from 'zustand/middleware';
 import { immer } from 'zustand/middleware/immer';
 import cloneDeep from 'lodash.clonedeep';
 import { nanoid } from 'nanoid';
+import { arrayMove } from '@dnd-kit/sortable';
 interface Component {
   com_id: string;
   type: string;
@@ -31,7 +32,10 @@ interface Action {
   toggleComponentLocked: (com_id: string) => void;
   copySelectedComponent: () => void;
   pasteCopiedComponent: () => void;
+  selectPrevComponent: () => void;
+  selectNextComponent: () => void;
   changeComponentTitle: (com_id: string, title: string) => void;
+  moveComponent: (oldIndex: number, newIndex: number) => void;
   removeComponentList: () => void;
 }
 
@@ -129,12 +133,46 @@ export const useComponentStore = create<State & Action>()(
             // 插入 copiedComponent
             insertNewComponent(state, copiedComponent);
           }),
+        selectPrevComponent: () =>
+          set((state: State) => {
+            const { selectedId, componentList } = state;
+            const selectedIndex = componentList.findIndex(
+              (c) => c.com_id === selectedId
+            );
+
+            if (selectedIndex < 0) return; // 未选中组件
+            if (selectedIndex <= 0) return; // 已经选中了第一个，无法在向上选中
+
+            state.selectedId = componentList[selectedIndex - 1].com_id;
+          }),
+        selectNextComponent: () =>
+          set((state: State) => {
+            const { selectedId, componentList } = state;
+            const selectedIndex = componentList.findIndex(
+              (c) => c.com_id === selectedId
+            );
+
+            if (selectedIndex < 0) return; // 未选中组件
+            if (selectedIndex + 1 === componentList.length) return; // 已经选中了最后一个，无法再向下选中
+
+            state.selectedId = componentList[selectedIndex + 1].com_id;
+          }),
         changeComponentTitle: (com_id, title) =>
           set((state: State) => {
             const curComp = state.componentList.find(
               (c) => c.com_id === com_id
             );
             if (curComp) curComp.title = title;
+          }),
+        // 移动组件位置
+        moveComponent: (oldIndex, newIndex) =>
+          set((state: State) => {
+            const { componentList: currentComponentList } = state;
+            state.componentList = arrayMove(
+              currentComponentList,
+              oldIndex,
+              newIndex
+            );
           }),
         removeComponentList: () => set({ componentList: [] }),
       })),

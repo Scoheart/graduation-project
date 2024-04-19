@@ -32,7 +32,7 @@ function Home() {
         </Content>
       </Layout>
       <Footer className=" text-center bg-[#f7f7f7] border-t-[1px] border-solid border-[#e8e8e8]">
-        在线问卷 &copy;2023 - present. Created by Scoheart
+        在线问卷 &copy;2024 - present. Created by Scoheart
       </Footer>
     </Layout>
   );

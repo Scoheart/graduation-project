@@ -12,6 +12,18 @@ export class QuestionService {
     private questionRepository: Repository<Question>,
   ) {}
 
+  async incrementAnswerCount(questionId: number): Promise<any> {
+    const entity = await this.questionRepository.findOne({
+      where: { id: questionId },
+    });
+    if (!entity) {
+      throw new Error('Entity not found');
+    }
+    entity.answerCount++; // 递增 answerCount
+    console.log(entity)
+    return this.questionRepository.update(questionId, entity);
+  }
+
   async create(user: User) {
     const question = await this.questionRepository.save({
       componentList: [],

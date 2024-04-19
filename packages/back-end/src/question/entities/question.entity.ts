@@ -1,5 +1,11 @@
 import { User } from 'src/users/entities/user.entity';
-import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 
 @Entity()
 export class Question {
@@ -27,11 +33,17 @@ export class Question {
   @Column({ type: 'boolean', default: false })
   isDeleted: boolean;
 
+  @CreateDateColumn()
+  createdAt: string;
+
+  @Column()
+  answerCount: number;
+
   @Column('json', { nullable: true })
   componentList: Array<Component>;
 
-  @ManyToOne(() => User, user => user.question)
-  user: User
+  @ManyToOne(() => User, (user) => user.question)
+  user: User;
 }
 
 interface Component {

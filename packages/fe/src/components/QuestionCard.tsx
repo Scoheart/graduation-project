@@ -47,10 +47,6 @@ const QuestionCard: FC<PropsType> = (props: PropsType) => {
 
   // 复制
   const { loading: duplicateLoading, run: duplicate } = useRequest(
-    // async () => {
-    //   const data = await duplicateQuestionService(id)
-    //   return data
-    // },
     async () => await duplicateQuestionRequest(id),
     {
       manual: true,
@@ -84,6 +80,19 @@ const QuestionCard: FC<PropsType> = (props: PropsType) => {
     });
   }
 
+  function time(createdAt: string) {
+    const date = new Date(createdAt);
+    date.setHours(date.getHours() + 8);
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+
+    const beijingTime = `${year}-${month}-${day} ${hours}:${minutes}`;
+    return beijingTime;
+  }
+
   // 已经删除的问卷，不要再渲染卡片了
   if (isDeletedState) return null;
 
@@ -108,7 +117,7 @@ const QuestionCard: FC<PropsType> = (props: PropsType) => {
               <Tag>未发布</Tag>
             )}
             <span>答卷: {answerCount}</span>
-            <span>{createdAt}</span>
+            <span>{time(createdAt)}</span>
           </Space>
         </div>
       </div>

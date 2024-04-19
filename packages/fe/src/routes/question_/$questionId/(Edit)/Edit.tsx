@@ -4,10 +4,9 @@ import {
   useLoaderData,
   useNavigate,
   useParams,
-  useRouterState,
 } from '@tanstack/react-router';
 import { nanoid } from 'nanoid';
-import { useDebounceEffect, useRequest } from 'ahooks';
+import { useDebounceEffect, useKeyPress, useRequest } from 'ahooks';
 import { ChangeEvent, FC, useEffect, useState } from 'react';
 import {
   Button,
@@ -45,6 +44,9 @@ import {
   updateQuestionRequest,
 } from '../../../../request/question';
 import { getToken } from '../../../../utils';
+import SortableContainer from '../../../../components/DragSortable/SortableContainer';
+import SortableItem from '../../../../components/DragSortable/SortableItem';
+import useBindCanvasKeyPress from '../../../../hooks/useBindCanvasKeyPress';
 
 const { Title } = Typography;
 const { TextArea } = Input;
@@ -158,7 +160,7 @@ const SaveButton: FC = () => {
 
   const { title, desc, js, css } = usePageInfoStore();
 
-  const { componentList } = useComponentStoreData();
+  const { componentList } = useComponentStore();
 
   const { loading, run: save } = useRequest(
     async () => {
@@ -174,6 +176,12 @@ const SaveButton: FC = () => {
     { manual: true }
   );
 
+  // 快捷键
+  useKeyPress(['ctrl.s', 'meta.s'], (event: KeyboardEvent) => {
+    event.preventDefault();
+    if (!loading) save();
+  });
+  
   // 自定保存（不是定期保存，不是定时器）
   useDebounceEffect(
     () => {
@@ -362,7 +370,7 @@ const ComponentLib: FC = () => {
 };
 
 const Layer: FC = () => {
-  const { selectedId, componentList } = useComponentStoreData();
+  const { selectedId, componentList } = useComponentStore();
   const [changingTitleId, setChangingTitleId] = useState('');
 
   const {
@@ -370,6 +378,7 @@ const Layer: FC = () => {
     toggleComponentLocked,
     changeComponentHidden,
     changeComponentTitle,
+    moveComponent,
   } = useComponentStore();
 
   const handleTitleClick = (com_id: string) => {
@@ -400,8 +409,18 @@ const Layer: FC = () => {
     changeComponentHidden(com_id, isHidden);
   const changeLocked = (com_id: string) => toggleComponentLocked(com_id);
 
+  // SortableContainer 组件的 items 属性，需要每个 item 都有 id
+  const componentListWithId = componentList.map((c) => {
+    return { ...c, id: c.com_id };
+  });
+
+  // 拖拽排序结束
+  function handleDragEnd(oldIndex: number, newIndex: number) {
+    moveComponent(oldIndex, newIndex);
+  }
+
   return (
-    <>
+    <SortableContainer items={componentListWithId} onDragEnd={handleDragEnd}>
       {componentList.map((c) => {
         const { com_id, title, isHidden, isLocked } = c;
 
@@ -414,45 +433,47 @@ const Layer: FC = () => {
         });
 
         return (
-          <div className=" py-2 border-b-[1px] border-[rgba(0, 0, 0, .06)] flex">
-            <div
-              className={titleClassName}
-              onClick={() => handleTitleClick(com_id)}
-            >
-              {com_id === changingTitleId && (
-                <Input
-                  value={title}
-                  onChange={changeTitle}
-                  onPressEnter={() => setChangingTitleId('')}
-                  onBlur={() => setChangingTitleId('')}
-                />
-              )}
-              {com_id !== changingTitleId && title}
+          <SortableItem key={com_id} id={com_id}>
+            <div className=" py-2 border-b-[1px] border-[rgba(0, 0, 0, .06)] flex">
+              <div
+                className={titleClassName}
+                onClick={() => handleTitleClick(com_id)}
+              >
+                {com_id === changingTitleId && (
+                  <Input
+                    value={title}
+                    onChange={changeTitle}
+                    onPressEnter={() => setChangingTitleId('')}
+                    onBlur={() => setChangingTitleId('')}
+                  />
+                )}
+                {com_id !== changingTitleId && title}
+              </div>
+              <div className="w-[50px] text-end">
+                <Space>
+                  <Button
+                    size="small"
+                    shape="circle"
+                    className={!isHidden ? 'opacity-20 ' : 'bg-[#1677ff]'}
+                    icon={<EyeInvisibleOutlined />}
+                    type={isHidden ? 'primary' : 'text'}
+                    onClick={() => changeHidden(com_id, !isHidden)}
+                  />
+                  <Button
+                    size="small"
+                    shape="circle"
+                    className={!isLocked ? 'opacity-20' : 'bg-[#1677ff]'}
+                    icon={<LockOutlined />}
+                    type={isLocked ? 'primary' : 'text'}
+                    onClick={() => changeLocked(com_id)}
+                  />
+                </Space>
+              </div>
             </div>
-            <div className="w-[50px] text-end">
-              <Space>
-                <Button
-                  size="small"
-                  shape="circle"
-                  className={!isHidden ? 'opacity-20' : ''}
-                  icon={<EyeInvisibleOutlined />}
-                  type={isHidden ? 'primary' : 'text'}
-                  onClick={() => changeHidden(com_id, !isHidden)}
-                />
-                <Button
-                  size="small"
-                  shape="circle"
-                  className={!isLocked ? 'opacity-20' : ''}
-                  icon={<LockOutlined />}
-                  type={isLocked ? 'primary' : 'text'}
-                  onClick={() => changeLocked(com_id)}
-                />
-              </Space>
-            </div>
-          </div>
+          </SortableItem>
         );
       })}
-    </>
+    </SortableContainer>
   );
 };
 
@@ -460,8 +481,13 @@ const EditCanvas: FC = () => {
   const { componentList: getComponentList } = useLoaderData({
     from: '/question/$questionId/Edit',
   });
-  const { selectedId, componentList, setComponentList, changeSelectedId } =
-    useComponentStore();
+  const {
+    selectedId,
+    componentList,
+    setComponentList,
+    changeSelectedId,
+    moveComponent,
+  } = useComponentStore();
 
   // 第一次加载设置默认选中第一个
   useEffect(() => {
@@ -473,6 +499,17 @@ const EditCanvas: FC = () => {
   useEffect(() => {
     setComponentList(getComponentList);
   }, []);
+  // 绑定快捷键
+  useBindCanvasKeyPress();
+  // SortableContainer 组件的 items 属性，需要每个 item 都有 id
+  const componentListWithId = componentList.map((c) => {
+    return { ...c, id: c.com_id };
+  });
+
+  // 拖拽排序结束
+  function handleDragEnd(oldIndex: number, newIndex: number) {
+    moveComponent(oldIndex, newIndex);
+  }
 
   return (
     <>
@@ -480,36 +517,43 @@ const EditCanvas: FC = () => {
         className=" flex-1 flex items-center overflow-hidden"
         onClick={() => changeSelectedId('')}
       >
-        <div className=" w-[400px] h-[712px] bg-white mx-auto overflow-auto shadow-[0px_2px_10px_#0000001f]">
-          {componentList
-            .filter((c) => !c.isHidden)
-            .map((component, index) => {
-              const { com_id, type, props, isLocked } = component;
-              const { Component } = getComponentConfByType(type)!;
-              const wrapperClassName =
-                'border border-solid border-[#fff] hover:border-[#d9d9d9] cursor-pointer m-3 p-3 rounded';
-              const selectClassName = '!border-[#1890ff]';
-              const lockedClassName = 'opacity-50 cursor-not-allowed';
-              const classname = classNames(wrapperClassName, {
-                [selectClassName]: com_id === selectedId,
-                [lockedClassName]: isLocked,
-              });
-              return (
-                <div
-                  key={index}
-                  className={classname}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    changeSelectedId(com_id);
-                  }}
-                >
-                  <div className="pointer-events-none">
-                    <Component {...props} />
-                  </div>
-                </div>
-              );
-            })}
-        </div>
+        <SortableContainer
+          items={componentListWithId}
+          onDragEnd={handleDragEnd}
+        >
+          <div className=" w-[400px] h-[712px] bg-white mx-auto overflow-auto shadow-[0px_2px_10px_#0000001f]">
+            {componentList
+              .filter((c) => !c.isHidden)
+              .map((component, index) => {
+                const { com_id, type, props, isLocked } = component;
+                const { Component } = getComponentConfByType(type)!;
+                const wrapperClassName =
+                  'border border-solid border-[#fff] hover:border-[#d9d9d9] cursor-pointer m-3 p-3 rounded';
+                const selectClassName = '!border-[#1890ff]';
+                const lockedClassName = 'opacity-50 cursor-not-allowed';
+                const classname = classNames(wrapperClassName, {
+                  [selectClassName]: com_id === selectedId,
+                  [lockedClassName]: isLocked,
+                });
+                return (
+                  <SortableItem key={com_id} id={com_id}>
+                    <div
+                      key={index}
+                      className={classname}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        changeSelectedId(com_id);
+                      }}
+                    >
+                      <div className="pointer-events-none">
+                        <Component {...props} />
+                      </div>
+                    </div>
+                  </SortableItem>
+                );
+              })}
+          </div>
+        </SortableContainer>
       </main>
     </>
   );
@@ -522,7 +566,7 @@ enum TAB_KEYS {
 const RightPanel: FC = () => {
   const [activeKey, setActiveKey] = useState(TAB_KEYS.SETTING_KEY);
 
-  const { selectedId } = useComponentStoreData();
+  const { selectedId } = useComponentStore();
 
   useEffect(() => {
     if (selectedId) setActiveKey(TAB_KEYS.PROP_KEY);
