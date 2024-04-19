@@ -4,7 +4,7 @@
 
 // 线上地址2
 export const BASE_URL = 'http://118.178.180.11:8888';
-export const CLINET_URL = 'http://118.178.180.11:3000/question/';
+export const CLINET_URL = 'http://118.178.180.11:3000';
 
 // 开发地址
 // export const BASE_URL = 'http://localhost:8888';
