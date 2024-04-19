@@ -22,7 +22,7 @@ import { StatModule } from './stat/stat.module';
     UsersModule,
     TypeOrmModule.forRoot({
       type: 'mysql',
-      host: '39.101.76.177',
+      host: '118.178.180.11',
       port: 3306,
       username: 'root',
       password: 'shuhao201028',
