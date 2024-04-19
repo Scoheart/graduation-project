@@ -36,7 +36,7 @@ export class Question {
   @CreateDateColumn()
   createdAt: string;
 
-  @Column()
+  @Column({ default: 0 })
   answerCount: number;
 
   @Column('json', { nullable: true })
